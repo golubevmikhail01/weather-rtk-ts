@@ -1,30 +1,22 @@
-import {createAsyncThunk} from "@reduxjs/toolkit";
-import type {WeatherInfo} from "../../utils/types";
+import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 import {api_key, base_url} from "../../utils/constants.ts";
+import type {WeatherInfo, WeatherInfoResponse} from "../../utils/types";
 
-export const fetchWeather = createAsyncThunk<
-    WeatherInfo,
-    string,
-    { rejectValue: string }
->("weather/fetchWeather",
-    async (city, {rejectWithValue}) => {
-        try {
-            const response = await fetch(`${base_url}?q=${city}&appid=${api_key}&units=metric`);
-
-            if (!response.ok) {
-                return rejectWithValue("Invalid city name");
-            }
-
-            const data = await response.json();
-
-            return {
-                country: data.sys.country,
+export const weatherApi = createApi({
+    reducerPath: 'weatherApi',
+    baseQuery: fetchBaseQuery({baseUrl: base_url}),
+    endpoints: builder => ({
+        getWeatherByCity: builder.query<WeatherInfo, string>({
+            query: (city: string) => `?q=${city}&appid=${api_key}&units=metric`,
+            transformResponse: (data: WeatherInfoResponse) => ({
                 city: data.name,
+                country: data.sys.country,
                 temp: data.main.temp,
                 pressure: data.main.pressure,
-                sunset: data.sys.sunset
-            };
-        } catch {
-            return rejectWithValue("Failed to fetch weather");
-        }
-    });
+                sunset: data.sys.sunset * 1000
+            })
+        })
+    })
+})
+
+export const {useGetWeatherByCityQuery} = weatherApi;
