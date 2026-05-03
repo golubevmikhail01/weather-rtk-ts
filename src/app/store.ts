@@ -1,6 +1,7 @@
 import {configureStore} from "@reduxjs/toolkit";
 import city from "../features/city/citySlice.ts";
 import {weatherApi} from "../features/api/weatherFetch.ts";
+import {setupListeners} from "@reduxjs/toolkit/query";
 
 
 export const store = configureStore({
@@ -10,6 +11,9 @@ export const store = configureStore({
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(weatherApi.middleware),
 });
+
+// window.addEventListener('focus', () => store.dispatch(weatherApi.util.resetApiState()));
+setupListeners(store.dispatch);
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
